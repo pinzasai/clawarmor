@@ -4,7 +4,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '0.6.0';
+const VERSION = '0.7.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function trustHeader(port) {
@@ -26,7 +26,8 @@ function usage() {
   console.log(`    ${paint.cyan('verify')}   Re-check only previously-failed items`);
   console.log(`    ${paint.cyan('trend')}    Show score over last N audits (ASCII chart)`);
   console.log(`    ${paint.cyan('compare')}  Compare coverage vs openclaw security audit`);
-  console.log(`    ${paint.cyan('monitor')}  Continuous external monitoring — clawarmor.dev ($9/mo)`);
+  console.log(`    ${paint.cyan('monitor')}  Continuous external monitoring — clawarmor.dev ($9/mo)
+    ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--json')}           Machine-readable JSON output (audit only)`);
@@ -95,6 +96,13 @@ if (cmd === 'trend') {
 if (cmd === 'compare') {
   const { runCompare } = await import('./lib/compare.js');
   process.exit(await runCompare());
+}
+
+
+if (cmd === 'fix') {
+  const { runFix } = await import('./lib/fix.js');
+  const fixFlags = { apply: process.argv.includes('--apply'), dryRun: process.argv.includes('--dry-run') };
+  process.exit(await runFix(fixFlags));
 }
 
 if (cmd === 'monitor') {

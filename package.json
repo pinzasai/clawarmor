@@ -1,7 +1,7 @@
 {
   "name": "clawarmor",
-  "version": "0.6.0",
-  "description": "Security armor for OpenClaw agents — audit, scan, monitor",
+  "version": "0.7.0",
+  "description": "Security armor for OpenClaw agents \u2014 audit, scan, monitor",
   "bin": {
     "clawarmor": "./cli.js"
   },
@@ -12,7 +12,14 @@
   "scripts": {
     "start": "node cli.js"
   },
-  "keywords": ["openclaw", "security", "hardening", "audit", "agent", "clawarmor"],
+  "keywords": [
+    "openclaw",
+    "security",
+    "hardening",
+    "audit",
+    "agent",
+    "clawarmor"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
