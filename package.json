@@ -6,9 +6,17 @@
     "clawarmor": "./cli.js"
   },
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "start": "node cli.js"
   },
-  "keywords": ["openclaw", "security", "hardening", "audit", "agent"],
-  "license": "MIT"
+  "keywords": ["openclaw", "security", "hardening", "audit", "agent", "clawarmor"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pinzasai/clawarmor"
+  },
+  "homepage": "https://clawarmor.dev"
 }
