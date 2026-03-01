@@ -2,83 +2,122 @@
 
 **Security armor for OpenClaw agents.**
 
-ClawArmor is the only security tool that runs real code against your OpenClaw deployment — not an LLM prompt pretending to be a scanner.
+The only tool that checks both your OpenClaw config AND probes your live gateway behavior — so you know you're actually secure, not just configured correctly.
 
 ```bash
-npx clawarmor audit    # score your config 0-100, get exact fixes
-npx clawarmor scan     # scan every skill file for malicious code
-npx clawarmor monitor  # continuous monitoring (clawarmor.dev)
+npm install -g clawarmor
+clawarmor audit     # 32-check audit + live gateway probes, 0-100 score
+clawarmor scan      # scan every skill file for malicious code
+clawarmor fix       # auto-apply safe fixes
+clawarmor verify    # re-check previously failed items (CI-friendly)
+clawarmor trend     # score history chart
 ```
 
 ---
 
-## What it does
+## What makes this different
 
-### `clawarmor audit`
-Reads your `~/.openclaw/openclaw.json` and scores your security posture from 0 to 100 across 12 checks:
+Every other OpenClaw security tool reads your config file. ClawArmor also **connects to your running gateway** and verifies live behavior.
 
-| Severity | Check |
+Config says `bind: loopback`. Is your gateway *actually* not reachable on LAN? Config says auth is enabled. Does the live WebSocket endpoint *actually* reject unauthenticated connections? Only behavioral probes can answer these.
+
+---
+
+## `clawarmor audit`
+
+32 checks across two layers:
+
+### Layer 1 — Live gateway probes (behavioral)
+
+| Probe | What it checks |
 |---|---|
-| CRITICAL | Gateway bind address (exposed to internet?) |
-| CRITICAL | Tailscale Funnel without password auth |
-| HIGH | Telegram DM policy open to anyone |
-| HIGH | Agent sandbox isolation |
-| HIGH | Credential file permissions (`agent-accounts.json`) |
-| HIGH | Config file permissions (`openclaw.json`) |
-| MEDIUM | Weak or default auth token |
-| MEDIUM | Channel group policies |
-| MEDIUM | OpenClaw version currency |
-| MEDIUM | Elevated tools access |
-| LOW | Thinking mode streaming |
-| LOW | Filesystem workspace restriction |
+| Port reachability | TCP-connects to gateway on every non-loopback interface |
+| Auth enforcement | WebSocket handshake with no token — does server reject it? |
+| Health endpoint leak | GET /health — does it expose config data in the response? |
+| CORS misconfiguration | OPTIONS with `Origin: https://evil.example.com` |
 
-Every finding includes the exact fix command. No guessing.
+### Layer 2 — Static config checks (32 total)
 
-### `clawarmor scan`
-Scans **all files** in every installed skill directory — `.js`, `.ts`, `.sh`, `.py`, `.rb` and more. Not just `SKILL.md`.
+Gateway · Auth · File permissions · Channel policies · Tool restrictions · Sandbox · Plugins · Version · Browser SSRF · Webhooks · mDNS · Trust model · AllowFrom wildcards · Trusted proxies
 
-This is the gap every other security tool on ClawHub has. They scan markdown. We scan code.
+Every finding includes:
+- The attack scenario it enables
+- The exact fix command
+- Severity: CRITICAL / HIGH / MEDIUM / LOW / INFO
 
-Detects:
+Score floors: 1 CRITICAL → max 50/100. 2+ CRITICAL → max 25/100.
+
+```
+  Security Score: 89/100  ┃  Grade: B
+  ████████████████████░░  89%
+
+  Verdict: Your instance is well-configured. Open items are low-risk hardening.
+```
+
+---
+
+## `clawarmor scan`
+
+Scans **all files** in every installed skill — `.js`, `.ts`, `.sh`, `.py`, `.rb` and SKILL.md. Not just markdown.
+
+**Code patterns detected:**
 - `eval()` and `new Function()` — arbitrary code execution
 - `child_process` imports — shell access
-- `spawnSync`/`execSync` — shell command execution
+- Credential file reads (`agent-accounts.json`, `.env`, SSH keys)
 - Pipe-to-shell patterns (`curl | bash`)
-- Credential file reads (`agent-accounts.json`, `.env`)
-- SSH key path references
-- Known data exfiltration domains
+- Known exfiltration domains
 - Large base64 blobs (obfuscated payloads)
-- Dynamic `require()` (unanalyzable module loading)
+- Dynamic `require()` — unanalyzable at static analysis time
 
-### `clawarmor monitor`
-Continuous external monitoring — we check your instance from outside your network and alert you before attackers find it. $9/month at [clawarmor.dev](https://clawarmor.dev).
+**SKILL.md instruction patterns detected:**
+- Instructions to read credential files
+- System prompt override attempts
+- Data exfiltration instructions
+- Persistent context injection
+- Deception instructions (hide from user)
+- Hardcoded IP fetch instructions
+
+Context-aware severity: built-in skills capped at INFO (OpenClaw-team reviewed). User-installed skills get full severity.
+
+---
+
+## `clawarmor fix`
+
+Auto-applies safe one-liner fixes from the last audit.
+
+```bash
+clawarmor fix --dry-run   # preview what would change
+clawarmor fix --apply     # apply and report
+```
+
+Shows which fixes need a gateway restart. Unfixable items (Docker install, FileVault) listed separately.
+
+---
+
+## `clawarmor verify`
+
+Re-runs only previously-failed checks. Exits 0 if all now pass — designed for CI pipelines.
+
+```bash
+clawarmor verify   # exit 0 = all fixed, exit 1 = still failing
+```
+
+---
+
+## `clawarmor trend`
+
+ASCII score chart across all previous audits, stored in `~/.clawarmor/history.json`.
 
 ---
 
 ## Installation
 
 ```bash
-# Run directly (no install)
-npx clawarmor audit
-
-# Or install globally
 npm install -g clawarmor
 clawarmor audit
 ```
 
-Requires Node.js 18+. Zero runtime dependencies.
-
----
-
-## What makes this different
-
-Every security skill on ClawHub (25+ of them) is an LLM prompt telling the model to think about security. ClawArmor runs actual code.
-
-- **Real network probes** — not "please describe your config"
-- **Real file scanning** — AST-level pattern detection across all skill files
-- **Real scoring** — weighted 0-100 with letter grade
-- **Real fixes** — exact commands, not generic advice
-- **Zero network calls** — `audit` and `scan` are 100% local
+Requires **Node.js 18+**. Zero runtime npm dependencies (Node.js built-ins only).
 
 ---
 
@@ -86,22 +125,24 @@ Every security skill on ClawHub (25+ of them) is an LLM prompt telling the model
 
 | Threat | ClawArmor | Notes |
 |---|---|---|
-| T-ACCESS-003: Token theft | ✅ | `audit` checks file permissions + config exposure |
-| T-PERSIST-001: Malicious skill | ✅ | `scan` catches code patterns across all skill files |
-| T-IMPACT-002: API cost DoS | ✅ | `monitor` detects exposure before attackers do |
-| T-EXEC-001/002: Prompt injection | — | Use [SupraWall](https://suprawall.io) for runtime policy |
-| T-EXFIL-001: Data exfiltration | — | Runtime policy layer required |
+| T-ACCESS-003: Token/config exposure | ✅ | `audit` — file permissions + config checks |
+| T-PERSIST-001: Malicious skill supply chain | ✅ | `scan` — all skill files, not just SKILL.md |
+| T-IMPACT-002: API cost DoS via exposure | ✅ | `audit` live probes detect exposure first |
+| T-EXEC-001/002: Prompt injection | ❌ | Runtime policy layer — use SupraWall |
+| T-EXFIL-001: Data exfiltration | ❌ | Runtime policy layer — use SupraWall |
 
 ---
 
 ## Privacy
 
-`clawarmor audit` and `clawarmor scan` run entirely locally. They read your config and skill files on disk and print results to your terminal. Nothing is sent anywhere.
+`audit`, `scan`, `fix`, `verify`, and `trend` run entirely locally. One optional network call: `registry.npmjs.org` for version check (can be skipped with `--offline`).
 
-`clawarmor monitor` is an optional paid service. See [clawarmor.dev/privacy](https://clawarmor.dev/privacy).
+`clawarmor monitor` is an optional paid service ($9/mo) — see [clawarmor.dev](https://clawarmor.dev).
+
+Every run prints what it reads and what network calls it makes before executing.
 
 ---
 
 ## License
 
-MIT — [clawarmor.dev](https://clawarmor.dev)
+MIT · [clawarmor.dev](https://clawarmor.dev) · [github.com/pinzasai/clawarmor](https://github.com/pinzasai/clawarmor)

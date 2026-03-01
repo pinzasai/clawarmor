@@ -4,7 +4,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '0.7.0';
+const VERSION = '1.0.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function trustHeader(port) {
