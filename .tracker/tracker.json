@@ -2,21 +2,24 @@
   "project": "ClawArmor",
   "mission": "Protect every OpenClaw instance in the world. Quality bar: staff security engineer with 20 years experience.",
   "repo": "https://github.com/pinzasai/clawarmor",
-  "lastUpdated": "2026-02-28T21:50:00-08:00",
+  "lastUpdated": "2026-02-28T21:54:25.688719",
   "currentVersion": "1.1.0",
   "nextVersion": "1.2.0",
-  "score": { "current": 100, "machine": "Alberto's Mac mini" },
+  "score": {
+    "current": 100,
+    "machine": "Alberto's Mac mini"
+  },
   "phases": [
     {
       "id": "P1",
-      "name": "v1.1.0 — Correctness",
-      "status": "in-progress",
+      "name": "v1.1.0 \u2014 Correctness",
+      "status": "done",
       "target": "tonight",
       "tasks": [
         {
           "id": "P1-1",
           "title": "--url flag: audit any OpenClaw instance (local or remote)",
-          "status": "building",
+          "status": "done",
           "priority": "critical",
           "why": "Without this, Docker/VPS installs get wrong results. The most exposed instances are VPS. We can't claim to protect them if we can't actually probe them.",
           "acceptance": "clawarmor audit --url 10.0.0.5:18789 probes remote, notes local config, shows auth warning for non-localhost"
@@ -24,7 +27,7 @@
         {
           "id": "P1-2",
           "title": "Config path discovery: find the RUNNING instance, not a guessed path",
-          "status": "building",
+          "status": "done",
           "priority": "critical",
           "why": "Multi-instance machines audit the wrong config. '100/100 then got hacked' is worse than not shipping.",
           "acceptance": "ps-based discovery finds actual config path and port from running process args. Warns if multiple instances found."
@@ -32,7 +35,7 @@
         {
           "id": "P1-3",
           "title": "Sandbox fix safety: check mainKey before applying",
-          "status": "building",
+          "status": "done",
           "priority": "high",
           "why": "Custom mainKey + sandbox mode=non-main can break the main session.",
           "acceptance": "fix --apply warns if config has non-default mainKey. Does not block, just warns clearly."
@@ -41,8 +44,8 @@
     },
     {
       "id": "P2",
-      "name": "v1.2.0 — Scan Integrity",
-      "status": "planned",
+      "name": "v1.2.0 \u2014 Scan Integrity",
+      "status": "in-progress",
       "target": "tomorrow",
       "tasks": [
         {
@@ -73,7 +76,7 @@
     },
     {
       "id": "P3",
-      "name": "v1.3.0 — Distribution",
+      "name": "v1.3.0 \u2014 Distribution",
       "status": "planned",
       "target": "this week",
       "tasks": [
@@ -113,12 +116,36 @@
     }
   ],
   "needsAlberto": [
-    { "id": "A1", "what": "npm 2FA setup", "why": "Can't publish without it", "urgent": true },
-    { "id": "A2", "what": "Notion API token (optional)", "why": "Auto-update Notion from backend", "urgent": false },
-    { "id": "A3", "what": "Scan FP threshold decision", "why": "Security-first (more FP) vs trust-first (fewer FP)?", "urgent": false },
-    { "id": "A4", "what": "--url auth warning UX decision", "why": "Require --i-have-authorization flag or not?", "urgent": false }
+    {
+      "id": "A1",
+      "what": "npm 2FA setup",
+      "why": "Can't publish without it",
+      "urgent": true
+    },
+    {
+      "id": "A2",
+      "what": "Notion API token (optional)",
+      "why": "Auto-update Notion from backend",
+      "urgent": false
+    },
+    {
+      "id": "A3",
+      "what": "Scan FP threshold decision",
+      "why": "Security-first (more FP) vs trust-first (fewer FP)?",
+      "urgent": false
+    },
+    {
+      "id": "A4",
+      "what": "--url auth warning UX decision",
+      "why": "Require --i-have-authorization flag or not?",
+      "urgent": false
+    }
   ],
   "updateSchedule": [
-    "7am PST", "11am PST", "3pm PST", "7pm PST", "10pm PST"
+    "7am PST",
+    "11am PST",
+    "3pm PST",
+    "7pm PST",
+    "10pm PST"
   ]
 }
