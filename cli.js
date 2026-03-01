@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '1.2.0';
+const VERSION = '2.0.0-alpha.1';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -45,6 +45,9 @@ function usage() {
   console.log(`    ${paint.cyan('trend')}    Show score over last N audits (ASCII chart)`);
   console.log(`    ${paint.cyan('compare')}  Compare coverage vs openclaw security audit`);
   console.log(`    ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
+  console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
+  console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
+  console.log(`    ${paint.cyan('prescan')}  Pre-scan a skill before installing it`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--url <host:port>')}   Probe a specific host:port instead of 127.0.0.1`);
@@ -151,6 +154,33 @@ if (cmd === 'fix') {
   const { runFix } = await import('./lib/fix.js');
   const fixFlags = { apply: process.argv.includes('--apply'), dryRun: process.argv.includes('--dry-run') };
   process.exit(await runFix(fixFlags));
+}
+
+if (cmd === 'watch') {
+  const { runWatch } = await import('./lib/watch.js');
+  const watchFlags = { daemon: args.includes('--daemon') };
+  process.exit(await runWatch(watchFlags));
+}
+
+if (cmd === 'protect') {
+  const { runProtect } = await import('./lib/protect.js');
+  const protectFlags = {
+    install: args.includes('--install'),
+    uninstall: args.includes('--uninstall'),
+    status: args.includes('--status'),
+  };
+  process.exit(await runProtect(protectFlags));
+}
+
+if (cmd === 'prescan') {
+  // Day 2 will replace with full implementation
+  const skillArg = args[1];
+  if (!skillArg) {
+    console.log(`  Usage: clawarmor prescan <skill-name>`);
+    process.exit(1);
+  }
+  console.log(`  [prescan] ${skillArg} — OK (full pre-scan coming in Day 2)`);
+  process.exit(0);
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
