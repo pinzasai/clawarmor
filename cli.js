@@ -25,8 +25,7 @@ function usage() {
   console.log(`    ${paint.cyan('verify')}   Re-check only previously-failed items`);
   console.log(`    ${paint.cyan('trend')}    Show score over last N audits (ASCII chart)`);
   console.log(`    ${paint.cyan('compare')}  Compare coverage vs openclaw security audit`);
-  console.log(`    ${paint.cyan('monitor')}  Coming soon
-    ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
+  console.log(`    ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--json')}           Machine-readable JSON output (audit only)`);
@@ -102,11 +101,6 @@ if (cmd === 'fix') {
   const { runFix } = await import('./lib/fix.js');
   const fixFlags = { apply: process.argv.includes('--apply'), dryRun: process.argv.includes('--dry-run') };
   process.exit(await runFix(fixFlags));
-}
-
-if (cmd === 'monitor') {
-  const { runMonitor } = await import('./lib/monitor.js');
-  runMonitor(); process.exit(0);
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
