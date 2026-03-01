@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '2.0.0-alpha.1';
+const VERSION = '2.0.0-alpha.3';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -45,10 +45,13 @@ function usage() {
   console.log(`    ${paint.cyan('trend')}    Show score over last N audits (ASCII chart)`);
   console.log(`    ${paint.cyan('compare')}  Compare coverage vs openclaw security audit`);
   console.log(`    ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
+  console.log(`    ${paint.cyan('harden')}   Interactive hardening wizard (--dry-run, --auto)`);
+  console.log(`    ${paint.cyan('status')}   One-screen security posture dashboard`);
   console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
   console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
   console.log(`    ${paint.cyan('prescan')}  Pre-scan a skill before installing it`);
   console.log(`    ${paint.cyan('log')}      View the audit event log`);
+  console.log(`    ${paint.cyan('digest')}   Show weekly security digest`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--url <host:port>')}   Probe a specific host:port instead of 127.0.0.1`);
@@ -193,6 +196,25 @@ if (cmd === 'log') {
   };
   const { runLog } = await import('./lib/log-viewer.js');
   process.exit(await runLog(logFlags));
+}
+
+if (cmd === 'harden') {
+  const hardenFlags = {
+    dryRun: args.includes('--dry-run'),
+    auto: args.includes('--auto'),
+  };
+  const { runHarden } = await import('./lib/harden.js');
+  process.exit(await runHarden(hardenFlags));
+}
+
+if (cmd === 'status') {
+  const { runStatus } = await import('./lib/status.js');
+  process.exit(await runStatus());
+}
+
+if (cmd === 'digest') {
+  const { runDigest } = await import('./lib/digest.js');
+  process.exit(await runDigest());
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
