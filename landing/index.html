@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClawArmor — Security for OpenClaw Agents</title>
+  <meta name="description" content="ClawArmor audits your OpenClaw config, probes your live gateway, and scans installed skills for threats. Free CLI. No LLM prompts. Real security.">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #1c2128; --border: #30363d;
+      --text: #e6edf3; --text2: #8b949e; --green: #3fb950; --amber: #d29922;
+      --red: #f85149; --blue: #58a6ff;
+      --mono: 'JetBrains Mono','Fira Code',ui-monospace,monospace;
+      --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; overflow-x: hidden; }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(13,17,23,0.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px;
+    }
+    .nav-logo { font-family: var(--mono); font-size: 1rem; font-weight: 700; color: var(--text); text-decoration: none; }
+    .nav-logo span { color: var(--green); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: var(--text2); font-size: 0.875rem; text-decoration: none; transition: color .15s; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { background: var(--green); color: #0d1117; padding: .4rem 1rem; border-radius: 6px; font-weight: 700; font-size: .85rem; text-decoration: none; }
+
+    .hero { max-width: 900px; margin: 0 auto; padding: 6rem 2rem 4rem; text-align: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: .4rem;
+      background: rgba(63,185,80,.1); border: 1px solid rgba(63,185,80,.3);
+      color: var(--green); font-size: .75rem; font-weight: 700;
+      padding: .3rem .8rem; border-radius: 20px; margin-bottom: 1.5rem; font-family: var(--mono);
+    }
+    h1 { font-size: clamp(2.2rem,5vw,3.5rem); font-weight: 800; line-height: 1.15; letter-spacing: -.02em; margin-bottom: 1.25rem; }
+    h1 em { color: var(--green); font-style: normal; }
+    .hero-sub { font-size: clamp(1rem,2vw,1.15rem); color: var(--text2); max-width: 580px; margin: 0 auto 2.5rem; }
+    .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.5rem; }
+    .btn-primary { background: var(--green); color: #0d1117; padding: .75rem 1.75rem; border-radius: 8px; font-weight: 700; font-size: 1rem; text-decoration: none; }
+    .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); padding: .75rem 1.75rem; border-radius: 8px; font-weight: 600; font-size: 1rem; text-decoration: none; }
+
+    .terminal { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; max-width: 740px; margin: 0 auto; box-shadow: 0 24px 64px rgba(0,0,0,.4); text-align: left; }
+    .term-bar { background: var(--bg3); padding: .6rem 1rem; display: flex; align-items: center; gap: .5rem; border-bottom: 1px solid var(--border); }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .d-r { background: #ff5f57; } .d-y { background: #ffbd2e; } .d-g { background: #28ca41; }
+    .term-title { flex: 1; text-align: center; font-size: .8rem; color: var(--text2); font-family: var(--mono); }
+    .term-body { padding: 1.25rem 1.5rem; font-family: var(--mono); font-size: .82rem; line-height: 1.75; overflow-x: auto; }
+    .tg { color: var(--green); } .ta { color: var(--amber); } .td { color: var(--text2); } .tb { color: var(--text); font-weight: 700; }
+
+    hr { border: none; border-top: 1px solid var(--border); }
+    section { padding: 5rem 2rem; }
+    .inner { max-width: 1100px; margin: 0 auto; }
+    .inner-sm { max-width: 720px; margin: 0 auto; }
+    .label { font-family: var(--mono); font-size: .72rem; font-weight: 700; color: var(--green); letter-spacing: .12em; text-transform: uppercase; margin-bottom: .75rem; }
+    h2 { font-size: clamp(1.6rem,3.5vw,2.4rem); font-weight: 800; line-height: 1.2; margin-bottom: 1rem; letter-spacing: -.02em; }
+    .sub { font-size: 1rem; color: var(--text2); max-width: 580px; margin-bottom: 3rem; }
+
+    .steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 1.25rem; }
+    .step { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; transition: border-color .2s; }
+    .step:hover { border-color: rgba(63,185,80,.4); }
+    .step-num { font-family: var(--mono); font-size: .7rem; font-weight: 700; color: var(--green); margin-bottom: .6rem; }
+    .step h3 { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; }
+    .step p { font-size: .875rem; color: var(--text2); }
+
+    .features { display: grid; grid-template-columns: repeat(auto-fit,minmax(300px,1fr)); gap: 1.25rem; }
+    .feat { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.5rem; }
+    .feat-icon { font-size: 1.4rem; margin-bottom: .6rem; }
+    .feat h3 { font-size: .95rem; font-weight: 700; margin-bottom: .35rem; }
+    .feat p { font-size: .875rem; color: var(--text2); }
+    .tag { display: inline-block; margin-top: .75rem; font-family: var(--mono); font-size: .7rem; font-weight: 700; padding: .2rem .5rem; border-radius: 4px; }
+    .tag-free { background: rgba(63,185,80,.15); color: var(--green); }
+    .tag-paid { background: rgba(210,153,34,.15); color: var(--amber); }
+
+    .compare-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: .8rem 1.2rem; text-align: left; border-bottom: 1px solid var(--border); font-size: .875rem; }
+    th { background: var(--bg3); font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text2); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    .ck { color: var(--green); font-weight: 700; }
+    .cx { color: var(--text2); }
+    .hi { color: var(--green); font-weight: 600; }
+
+    .pricing { display: grid; grid-template-columns: repeat(auto-fit,minmax(280px,1fr)); gap: 1.5rem; }
+    .plan { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; }
+    .plan.feat-plan { border-color: var(--green); background: linear-gradient(135deg,rgba(63,185,80,.05) 0%,var(--bg2) 100%); }
+    .plan-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--text2); margin-bottom: .4rem; }
+    .plan-name { font-size: 1.4rem; font-weight: 800; }
+    .plan-price { font-size: 2.5rem; font-weight: 800; line-height: 1; margin: .75rem 0; }
+    .plan-price span { font-size: 1rem; font-weight: 400; color: var(--text2); }
+    .plan-desc { font-size: .875rem; color: var(--text2); margin-bottom: 1.25rem; }
+    .plan ul { list-style: none; margin-bottom: 1.75rem; }
+    .plan li { font-size: .875rem; padding: .35rem 0; display: flex; gap: .5rem; }
+    .plan li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
+    .plan-btn { display: block; text-align: center; padding: .65rem; border-radius: 8px; font-weight: 700; font-size: .9rem; text-decoration: none; }
+    .plan-btn-p { background: var(--green); color: #0d1117; }
+    .plan-btn-s { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+
+    .install-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.75rem 2rem; font-family: var(--mono); font-size: .875rem; }
+    .iline { display: flex; gap: .75rem; margin-bottom: .4rem; }
+    .iline:last-child { margin-bottom: 0; }
+    .prompt { color: var(--green); user-select: none; }
+
+    footer { border-top: 1px solid var(--border); padding: 2.5rem 2rem; text-align: center; color: var(--text2); font-size: .85rem; }
+    .foot-links { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: .75rem; }
+    .foot-links a { color: var(--text2); text-decoration: none; }
+    .foot-links a:hover { color: var(--text); }
+
+    @media(max-width:640px) { nav { padding: 0 1rem; } .nav-links { display: none; } section { padding: 3.5rem 1.25rem; } .hero { padding: 4rem 1.25rem 3rem; } }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo"><span>🛡</span> ClawArmor</a>
+  <ul class="nav-links">
+    <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="https://github.com/pinzasai/clawarmor">GitHub</a></li>
+  </ul>
+  <a href="#install" class="nav-cta">Install free →</a>
+</nav>
+
+<section class="hero">
+  <div class="badge">🛡 OpenClaw Security Tool</div>
+  <h1>Your OpenClaw agent<br>is probably <em>exposed</em>.</h1>
+  <p class="hero-sub">ClawArmor audits your config, probes your live gateway, and scans installed skills for threats. Real checks — no LLM prompts. Free forever.</p>
+  <div class="hero-actions">
+    <a href="#install" class="btn-primary">npm install -g clawarmor</a>
+    <a href="https://github.com/pinzasai/clawarmor" class="btn-secondary">★ View on GitHub</a>
+  </div>
+  <div class="terminal">
+    <div class="term-bar">
+      <div class="dot d-r"></div><div class="dot d-y"></div><div class="dot d-g"></div>
+      <span class="term-title">clawarmor audit</span>
+    </div>
+    <div class="term-body">
+<span class="td">  ℹ  Reads: ~/.openclaw/openclaw.json + file permissions only</span>
+<span class="td">     Network: registry.npmjs.org + 127.0.0.1:18789 (live probes)</span>
+<span class="td">     Sends nothing. Source: github.com/pinzasai/clawarmor</span>
+
+<span class="td">  ── LIVE GATEWAY PROBES ──────────────────────────</span>
+<span class="tg">  ✓</span> <span class="td">Gateway running on port 18789</span>
+<span class="tg">  ✓</span> <span class="td">Not reachable on network interfaces (probed live)</span>
+<span class="tg">  ✓</span> <span class="td">Authentication required (WebSocket probe confirmed)</span>
+<span class="tg">  ✓</span> <span class="td">/health endpoint does not leak sensitive data</span>
+
+<span class="tb">  Security Score: </span><span class="tg">89/100  Grade: B</span>
+<span class="tg">  ████████████████████</span><span class="td">░░  89%</span>
+
+<span class="td">  Verdict: Your instance is well-configured.</span>
+<span class="td">           Open items are low-risk hardening.</span>
+
+<span class="ta">  ✗ [MEDIUM]</span> <span class="td">Browser SSRF not explicitly disabled</span>
+<span class="td">    Fix: openclaw config set browser.ssrfPolicy.dangerouslyAllowPrivateNetwork false</span>
+
+<span class="td">  ── PASSED (28 checks) ───────────────────────────</span>
+<span class="tg">  ✓</span> <span class="td">Gateway bound to loopback only</span>
+<span class="tg">  ✓</span> <span class="td">Auth token is strong</span>
+<span class="tg">  ✓</span> <span class="td">All channel allowFrom settings are restricted  … +25 more</span>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section id="how">
+  <div class="inner">
+    <p class="label">How it works</p>
+    <h2>Three rings of defense</h2>
+    <p class="sub">Most tools read config files. ClawArmor also probes your live running gateway — so you know you're actually safe, not just configured correctly.</p>
+    <div class="steps">
+      <div class="step">
+        <p class="step-num">RING 1 — STATIC ANALYSIS</p>
+        <h3>Config audit</h3>
+        <p>32 checks across gateway settings, file permissions, channel policies, tool restrictions, and credential storage. Finds misconfigured defaults before attackers do.</p>
+      </div>
+      <div class="step">
+        <p class="step-num">RING 2 — LIVE PROBES</p>
+        <h3>Behavioral verification</h3>
+        <p>Actually connects to your running gateway. Is the port open on non-loopback interfaces? Does it require auth? Does /health leak secrets? Config could lie. Probes can't.</p>
+      </div>
+      <div class="step">
+        <p class="step-num">RING 3 — SUPPLY CHAIN</p>
+        <h3>Skill scanner</h3>
+        <p>Scans every installed skill — not just SKILL.md, but all .js, .sh, .py scripts — for credential theft, RCE, exfiltration, and prompt injection patterns.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section id="features" style="background:var(--bg2)">
+  <div class="inner">
+    <p class="label">Features</p>
+    <h2>Everything in one tool</h2>
+    <p class="sub">Five commands. Full coverage of the OpenClaw attack surface.</p>
+    <div class="features">
+      <div class="feat">
+        <div class="feat-icon">🔍</div>
+        <h3>clawarmor audit</h3>
+        <p>Full audit: 32 checks, live gateway probes, human verdict, 0-100 score. Persists history so you can track improvement.</p>
+        <span class="tag tag-free">Free forever</span>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🧬</div>
+        <h3>clawarmor scan</h3>
+        <p>Deep skill scanner. Finds malicious code across .js, .sh, .py, .ts — and scans SKILL.md instructions for prompt injection and data theft attempts.</p>
+        <span class="tag tag-free">Free forever</span>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔧</div>
+        <h3>clawarmor fix</h3>
+        <p>Auto-applies safe fixes. Dry-run first to preview, then --apply. No more copy-pasting fix commands from audit output.</p>
+        <span class="tag tag-free">Free forever</span>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">✅</div>
+        <h3>clawarmor verify</h3>
+        <p>Re-runs only previously-failed checks and confirms they're green. Exit 0 on pass — perfect for CI pipelines.</p>
+        <span class="tag tag-free">Free forever</span>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📈</div>
+        <h3>clawarmor trend</h3>
+        <p>ASCII chart of your security score over time. Track what improved, what regressed, how you compare to your best score.</p>
+        <span class="tag tag-free">Free forever</span>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🌐</div>
+        <h3>clawarmor monitor</h3>
+        <p>Continuous external monitoring. We probe your gateway from our infrastructure, alert via Telegram or Discord if exposure is detected.</p>
+        <span class="tag tag-paid">$9/month</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section>
+  <div class="inner">
+    <p class="label">Why ClawArmor</p>
+    <h2>The only tool with live probes</h2>
+    <p class="sub">Every other OpenClaw security tool reads config files. We also verify live behavior.</p>
+    <div class="compare-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th class="hi">ClawArmor</th>
+            <th>openclaw security audit</th>
+            <th>ClawHub security skills</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Config file audit</td><td class="hi ck">✓</td><td class="ck">✓</td><td class="cx">—</td></tr>
+          <tr><td>Live gateway behavioral probes</td><td class="hi ck">✓</td><td class="cx">—</td><td class="cx">—</td></tr>
+          <tr><td>WebSocket auth probe</td><td class="hi ck">✓</td><td class="cx">—</td><td class="cx">—</td></tr>
+          <tr><td>Skill JS/SH/PY file scanning</td><td class="hi ck">✓</td><td class="cx">—</td><td class="cx">partial</td></tr>
+          <tr><td>SKILL.md instruction scanning</td><td class="hi ck">✓</td><td class="cx">—</td><td class="cx">—</td></tr>
+          <tr><td>Auto-fix command</td><td class="hi ck">✓</td><td class="cx">—</td><td class="cx">—</td></tr>
+          <tr><td>Score history + trend tracking</td><td class="hi ck">✓</td><td class="cx">—</td><td class="cx">—</td></tr>
+          <tr><td>Zero runtime dependencies</td><td class="hi ck">✓</td><td class="ck">✓</td><td class="cx">varies</td></tr>
+          <tr><td>Continuous external monitoring</td><td class="hi">✓ ($9/mo)</td><td class="cx">—</td><td class="cx">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section id="pricing" style="background:var(--bg2)">
+  <div class="inner">
+    <p class="label">Pricing</p>
+    <h2>Free tools. Paid peace of mind.</h2>
+    <p class="sub">The CLI is free forever. Pay only for continuous external monitoring.</p>
+    <div class="pricing">
+      <div class="plan">
+        <p class="plan-label">Local</p>
+        <p class="plan-name">Free</p>
+        <p class="plan-price">$0 <span>/ forever</span></p>
+        <p class="plan-desc">Full local security toolkit. Everything you need to harden your OpenClaw instance.</p>
+        <ul>
+          <li>32-check config audit</li>
+          <li>Live gateway behavioral probes</li>
+          <li>Skill scanner (JS, SH, PY, SKILL.md)</li>
+          <li>Auto-fix command</li>
+          <li>Score history + trend chart</li>
+          <li>CI integration (exit codes)</li>
+          <li>Zero network calls (except version check)</li>
+        </ul>
+        <a href="#install" class="plan-btn plan-btn-s">Install free →</a>
+      </div>
+      <div class="plan feat-plan">
+        <p class="plan-label">Monitor</p>
+        <p class="plan-name">Pro</p>
+        <p class="plan-price">$9 <span>/ month</span></p>
+        <p class="plan-desc">Continuous external monitoring — we probe your gateway from our infrastructure around the clock.</p>
+        <ul>
+          <li>Everything in Free</li>
+          <li>External probes from our servers</li>
+          <li>Alert via Telegram, Discord, or webhook</li>
+          <li>Weekly security digest</li>
+          <li>Shodan exposure monitoring</li>
+          <li>Historical exposure log</li>
+        </ul>
+        <a href="mailto:hello@clawarmor.dev" class="plan-btn plan-btn-p">Join waitlist →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr>
+
+<section id="install">
+  <div class="inner-sm">
+    <p class="label">Get started</p>
+    <h2>Up and running in 30 seconds</h2>
+    <p class="sub" style="margin-bottom:2rem">npm package. Zero dependencies. Works on macOS, Linux, Windows (WSL).</p>
+    <div class="install-box">
+      <div class="iline"><span class="prompt">$</span><span>npm install -g clawarmor</span><span class="td" style="margin-left:auto;font-size:.8rem"># install once</span></div>
+      <div class="iline"><span class="prompt">$</span><span>clawarmor audit</span><span class="td" style="margin-left:auto;font-size:.8rem"># run your first audit</span></div>
+      <div class="iline"><span class="prompt">$</span><span>clawarmor fix --apply</span><span class="td" style="margin-left:auto;font-size:.8rem"># auto-fix safe issues</span></div>
+      <div class="iline"><span class="prompt">$</span><span>clawarmor scan</span><span class="td" style="margin-left:auto;font-size:.8rem"># scan installed skills</span></div>
+    </div>
+    <p style="margin-top:1.5rem;font-size:.875rem;color:var(--text2);text-align:center">
+      Requires <a href="https://nodejs.org" style="color:var(--blue)">Node.js 18+</a> and an OpenClaw installation.<br>
+      Source: <a href="https://github.com/pinzasai/clawarmor" style="color:var(--blue)">github.com/pinzasai/clawarmor</a>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-links">
+    <a href="https://github.com/pinzasai/clawarmor">GitHub</a>
+    <a href="https://github.com/pinzasai/clawarmor/blob/main/SECURITY.md">Security Policy</a>
+    <a href="mailto:hello@clawarmor.dev">Contact</a>
+    <a href="#pricing">Monitor ($9/mo)</a>
+  </div>
+  <p>© 2026 ClawArmor · Built for the OpenClaw ecosystem · <a href="https://clawarmor.dev">clawarmor.dev</a></p>
+</footer>
+
+</body>
+</html>
