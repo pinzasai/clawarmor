@@ -1,163 +1,67 @@
-<div align="center">
+# ClawArmor
 
-# 🛡 ClawArmor
-
-**The security auditor for OpenClaw agents.**
-
-Checks your config. Probes your live gateway. Scans your skills.  
-Runs in 30 seconds. Finds what config-only tools miss. Free forever.
+Security armor for OpenClaw agents — audit, scan, monitor.
 
 [![npm version](https://img.shields.io/npm/v/clawarmor?color=3fb950&label=npm&style=flat-square)](https://www.npmjs.com/package/clawarmor)
 [![license](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
-[![node](https://img.shields.io/badge/node-%3E%3D18-green?style=flat-square)](package.json)
+[![zero deps](https://img.shields.io/badge/deps-zero-green?style=flat-square)](package.json)
+
+## What it does
+
+- Audits your OpenClaw config and live gateway with 30+ checks — scored 0–100
+- Scans every installed skill file for malicious code and prompt injection patterns
+- Guards every install: intercepts `openclaw clawhub install`, pre-scans before activation
+
+## Quick start
 
 ```bash
-npm install -g clawarmor && clawarmor audit
-```
-
-</div>
-
----
-
-```
-  ℹ  Reads: ~/.openclaw/openclaw.json + file permissions only
-     Network: registry.npmjs.org (version check) + 127.0.0.1:18789 (live probes)
-     Sends nothing. Source: github.com/pinzasai/clawarmor
-
-  ── LIVE GATEWAY PROBES  (connecting to 127.0.0.1) ──
-  ✓ Gateway running on port 18789
-  ✓ Not reachable on network interfaces (probed live)
-  ✓ Authentication required (WebSocket probe confirmed)
-  ✓ /health endpoint does not leak sensitive data
-  ✓ CORS not open to arbitrary origins
-
-  Security Score: 100/100  ┃  Grade: A
-  ████████████████████  100%
-
-  Verdict: Your instance is secure. No issues found.
-
-  ── PASSED (30 checks) ──────────────────────────────
-  ✓ Gateway bound to loopback only
-  ✓ Auth token is strong
-  ✓ Agent sandbox mode: "non-main" (sessions isolated)
-  ✓ Browser SSRF to private networks blocked
-  ✓ All channel allowFrom settings are restricted
-  ... 25 more
-```
-
----
-
-## Why ClawArmor
-
-Every other OpenClaw security tool reads your config file and tells you if things look right on paper.
-
-**ClawArmor also connects locally to your running gateway and verifies live behavior.**
-
-Config says `bind: loopback`. Is your gateway *actually* unreachable on LAN? Config says auth is enabled. Does the live WebSocket endpoint *actually* reject unauthenticated connections? A misconfigured nginx in front can make your config lie. Live probes can't be faked.
-
-> All probes connect from your machine to `127.0.0.1` (and your local network interfaces). Nothing leaves your machine.
-
----
-
-## Five commands
-
-```bash
-clawarmor audit     # 30 checks + 5 live gateway probes. Score 0-100. Plain-English verdict.
-clawarmor scan      # Scan every skill file (.js .sh .py .ts SKILL.md) for malicious code.
-clawarmor fix       # Auto-apply safe fixes. --dry-run to preview, --apply to execute.
-clawarmor verify    # Re-run only previously-failed checks. Exit 0 if all fixed (CI-friendly).
-clawarmor trend     # ASCII chart of your security score over time.
-```
-
----
-
-## What it checks
-
-### Live gateway probes (behavioral — not just config reads)
-
-| Probe | What it checks |
-|---|---|
-| Port reachability | TCP-connects to gateway on every non-loopback interface |
-| Auth enforcement | WebSocket handshake without token — does server reject it? |
-| Health endpoint | GET /health — does response contain config data or secrets? |
-| CORS headers | OPTIONS with `Origin: https://evil.example.com` |
-
-These probes are **read-only and non-destructive**. They observe — they don't modify anything.
-
-### Config audit (30 checks)
-
-Gateway bind · auth mode · token strength · dangerous flags · mDNS exposure · real-IP fallback · trusted proxy config · file permissions (`~/.openclaw/`, `openclaw.json`, `agent-accounts.json`, `credentials/`) · channel allowFrom policies · wildcard detection · group policies · elevated tools · exec sandbox · tool restrictions (filesystem scope, apply_patch scope) · browser SSRF policy · plugin allowlist · log redaction · version currency · webhook security · multi-user trust model
-
-### Skill supply chain scan
-
-Scans **all files** in every installed skill — `.js`, `.ts`, `.sh`, `.py`, `.rb` and `SKILL.md`. Not just markdown.
-
-**Code patterns:** `eval()`, `new Function()`, `child_process`, credential file reads, pipe-to-shell, known exfil domains, large base64 blobs, dynamic `require()`
-
-**SKILL.md instruction patterns:** credential read instructions, system prompt overrides, exfiltration instructions, deception instructions, hardcoded IP fetches
-
-> **Honest limitation:** The scanner catches unsophisticated threats and common patterns. Obfuscated code (string concatenation, encoded payloads) can bypass static analysis. Treat a clean scan as a good signal, not a guarantee.
-
----
-
-## What it protects against
-
-| Threat | Covered | Notes |
-|---|---|---|
-| T-ACCESS-003: Token/config exposure | ✅ | File permission checks + config hardening |
-| T-PERSIST-001: Malicious skill supply chain | ✅ | All skill files scanned, not just SKILL.md |
-| T-EXEC-001/002: Prompt injection | ❌ | Runtime policy layer — use [SupraWall](https://suprawall.io) |
-| T-EXFIL-001: Data exfiltration | ❌ | Runtime policy layer — use SupraWall |
-
-ClawArmor hardens your configuration and detects supply chain threats. It does not provide runtime policy enforcement — that's a different layer.
-
----
-
-## Auto-fix
-
-```bash
-clawarmor fix --dry-run   # preview what would change
-clawarmor fix --apply     # apply safe one-liner fixes + gateway restart instructions
-```
-
-Sandbox isolation is enabled safely: if Docker is installed, `fix --apply` sets `sandbox.mode=non-main` + `workspaceAccess=rw` so your Telegram/group sessions keep workspace access.
-
----
-
-## CI integration
-
-```bash
-# Fail CI if security score drops
-clawarmor verify   # exit 0 = all previously-failed checks now pass
-                   # exit 1 = still failing
-```
-
-Score history persists in `~/.clawarmor/history.json`.
-
----
-
-## Privacy & security
-
-- `audit`, `scan`, `fix`, `verify`, `trend` run **entirely locally**
-- One optional network call: `registry.npmjs.org` for version check (skippable with `--offline`)
-- Every run prints exactly what files it reads and what network calls it makes before executing
-- Nothing is sent anywhere
-
-**Found a vulnerability in ClawArmor itself?** Please email `pinzasrojas@proton.me` before public disclosure.
-
----
-
-## Installation
-
-```bash
-npm install -g clawarmor   # requires Node.js 18+
+npm install -g clawarmor
+clawarmor protect --install
 clawarmor audit
 ```
 
-Zero runtime npm dependencies. Node.js built-ins only (`net`, `http`, `os`, `fs`, `crypto`).
+## Commands
 
----
+| Command | Description |
+|---|---|
+| `audit` | Score your OpenClaw config (0–100), live gateway probes, plain-English verdict |
+| `scan` | Scan all installed skill files for malicious code and SKILL.md instructions |
+| `prescan <skill>` | Pre-scan a skill before installing — blocks on CRITICAL findings |
+| `protect --install` | Install guard hook, shell intercept (zsh/bash/fish), and watch daemon |
+| `protect --uninstall` | Remove all ClawArmor protection components |
+| `protect --status` | Show current protection state |
+| `watch` | Monitor config and skill changes in real time |
+| `watch --daemon` | Start the watcher as a background daemon |
+| `harden` | Interactive hardening wizard (--dry-run, --auto) |
+| `status` | One-screen security posture dashboard |
+| `log` | View the audit event log |
+| `digest` | Show weekly security digest |
+| `verify` | Re-run only previously-failed checks (CI-friendly, exit 0 = all fixed) |
+| `trend` | ASCII chart of your security score over time |
+| `compare` | Compare coverage vs openclaw security audit |
+| `fix` | Auto-apply safe fixes (--dry-run to preview, --apply to run) |
+
+## What it catches
+
+| Threat | Description | Coverage |
+|---|---|---|
+| Token/config exposure | File permission checks, config hardening | Full |
+| Malicious skill supply chain | All skill files scanned — not just SKILL.md | Full |
+| Credential hygiene | Token age, rotation reminders, access scope | Full |
+| Config drift | Baseline hashing, change detection on every startup | Full |
+| Obfuscation | Base64 blobs, dynamic eval, encoded payloads | Partial |
+| Prompt injection via SKILL.md | Instruction patterns, exfil, deception, system overrides | Full |
+| Live gateway auth | WebSocket probe — does server actually reject unauthenticated connections? | Full |
+| CORS misconfiguration | OPTIONS probe with arbitrary origin | Full |
+| Gateway exposure | TCP-connects to every non-loopback interface | Full |
+| Runtime policy enforcement | Requires a runtime layer (SupraWall) | None |
+
+## Philosophy
+
+ClawArmor runs entirely on your machine — no telemetry, no cloud, no accounts.
+It has zero npm runtime dependencies, using only Node.js built-ins.
+Every run prints exactly what files it reads and what network calls it makes before executing anything.
 
 ## License
 
-MIT — see [LICENSE](LICENSE)
+MIT

@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '2.0.0-alpha.3';
+const VERSION = '2.0.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {

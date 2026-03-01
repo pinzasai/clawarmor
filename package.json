@@ -1,6 +1,6 @@
 {
   "name": "clawarmor",
-  "version": "2.0.0-alpha.3",
+  "version": "2.0.0",
   "description": "Security armor for OpenClaw agents — audit, scan, monitor",
   "bin": {
     "clawarmor": "cli.js"
