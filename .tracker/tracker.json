@@ -2,7 +2,7 @@
   "project": "ClawArmor",
   "mission": "Protect every OpenClaw instance in the world. Quality bar: staff security engineer with 20 years experience.",
   "repo": "https://github.com/pinzasai/clawarmor",
-  "lastUpdated": "2026-02-28T21:54:25.688719",
+  "lastUpdated": "2026-03-01T05:57:36.160Z",
   "currentVersion": "1.1.0",
   "nextVersion": "1.2.0",
   "score": {
@@ -12,7 +12,7 @@
   "phases": [
     {
       "id": "P1",
-      "name": "v1.1.0 \u2014 Correctness",
+      "name": "v1.1.0 — Correctness",
       "status": "done",
       "target": "tonight",
       "tasks": [
@@ -44,7 +44,7 @@
     },
     {
       "id": "P2",
-      "name": "v1.2.0 \u2014 Scan Integrity",
+      "name": "v1.2.0 — Scan Integrity",
       "status": "in-progress",
       "target": "tomorrow",
       "tasks": [
@@ -76,7 +76,7 @@
     },
     {
       "id": "P3",
-      "name": "v1.3.0 \u2014 Distribution",
+      "name": "v1.3.0 — Distribution",
       "status": "planned",
       "target": "this week",
       "tasks": [
@@ -91,7 +91,7 @@
         {
           "id": "P3-2",
           "title": "npm publish",
-          "status": "blocked",
+          "status": "done",
           "priority": "high",
           "blockedBy": "Alberto: npm 2FA setup needed",
           "acceptance": "npm install -g clawarmor works. Version 1.1.0+"

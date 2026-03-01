@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// ClawArmor v1.1.0 — Security armor for OpenClaw agents
+// ClawArmor v1.2.0 — Security armor for OpenClaw agents
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -50,7 +50,8 @@ function usage() {
   console.log(`    ${paint.dim('--url <host:port>')}   Probe a specific host:port instead of 127.0.0.1`);
   console.log(`    ${paint.dim('--config <path>')}     Use a specific config file instead of ~/.openclaw/openclaw.json`);
   console.log(`    ${paint.dim('--json')}              Machine-readable JSON output (audit only)`);
-  console.log(`    ${paint.dim('--explain-reads')}     Print every file read and network call before executing`);
+  console.log(`    ${paint.dim('--explain-reads')}     Print every file read and network call before executing
+    ${paint.dim('--accept-changes')}    Update config baseline after reviewing detected changes`);
   console.log('');
   console.log(`  ${paint.dim('Examples:')}`);
   console.log(`    ${paint.dim('clawarmor audit')}                         ${paint.dim('# local, default')}`);
@@ -79,6 +80,7 @@ const flags = {
   targetHost: parsedUrl?.host || null,
   targetPort: parsedUrl?.port || null,
   configPath: configPathArg || null,
+  acceptChanges: args.includes('--accept-changes'),
 };
 
 if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') { usage(); process.exit(0); }
