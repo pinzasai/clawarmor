@@ -137,7 +137,7 @@ Requires **Node.js 18+**. Zero runtime npm dependencies (Node.js built-ins only)
 
 `audit`, `scan`, `fix`, `verify`, and `trend` run entirely locally. One optional network call: `registry.npmjs.org` for version check (can be skipped with `--offline`).
 
-`clawarmor monitor` is an optional paid service ($9/mo) — see [clawarmor.dev](https://clawarmor.dev).
+`clawarmor monitor` is a work in progress — coming soon.
 
 Every run prints what it reads and what network calls it makes before executing.
 
@@ -145,4 +145,4 @@ Every run prints what it reads and what network calls it makes before executing.
 
 ## License
 
-MIT · [clawarmor.dev](https://clawarmor.dev) · [github.com/pinzasai/clawarmor](https://github.com/pinzasai/clawarmor)
+MIT · [github.com/pinzasai/clawarmor](https://github.com/pinzasai/clawarmor)

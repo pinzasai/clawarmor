@@ -27,7 +27,7 @@ ClawArmor is built on research into exposed OpenClaw instances. We follow respon
 
 ## Reporting vulnerabilities in ClawArmor
 
-If you find a security vulnerability in ClawArmor itself, please email **security@clawarmor.dev** before public disclosure. We commit to:
+If you find a security vulnerability in ClawArmor itself, please email **pinzasrojas@proton.me** before public disclosure. We commit to:
 
 - Acknowledging your report within 48 hours
 - Providing a fix or mitigation within 14 days for critical issues

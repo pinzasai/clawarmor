@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 // ClawArmor v0.6 — Security armor for OpenClaw agents
-// clawarmor.dev
 
 import { paint } from './lib/output/colors.js';
 
@@ -26,14 +25,14 @@ function usage() {
   console.log(`    ${paint.cyan('verify')}   Re-check only previously-failed items`);
   console.log(`    ${paint.cyan('trend')}    Show score over last N audits (ASCII chart)`);
   console.log(`    ${paint.cyan('compare')}  Compare coverage vs openclaw security audit`);
-  console.log(`    ${paint.cyan('monitor')}  Continuous external monitoring — clawarmor.dev ($9/mo)
+  console.log(`    ${paint.cyan('monitor')}  Continuous external monitoring (coming soon)
     ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--json')}           Machine-readable JSON output (audit only)`);
   console.log(`    ${paint.dim('--explain-reads')}  Print every file read and network call before executing`);
   console.log('');
-  console.log(`  ${paint.dim('clawarmor.dev · hello@clawarmor.dev')}`);
+  console.log(`  ${paint.dim('github.com/pinzasai/clawarmor')}`);
   console.log('');
 }
 
