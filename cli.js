@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// ClawArmor v1.2.0 — Security armor for OpenClaw agents
+// ClawArmor v2.0.0-alpha.2 — Security armor for OpenClaw agents
 
 import { paint } from './lib/output/colors.js';
 
@@ -48,6 +48,7 @@ function usage() {
   console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
   console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
   console.log(`    ${paint.cyan('prescan')}  Pre-scan a skill before installing it`);
+  console.log(`    ${paint.cyan('log')}      View the audit event log`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--url <host:port>')}   Probe a specific host:port instead of 127.0.0.1`);
@@ -173,14 +174,25 @@ if (cmd === 'protect') {
 }
 
 if (cmd === 'prescan') {
-  // Day 2 will replace with full implementation
   const skillArg = args[1];
   if (!skillArg) {
     console.log(`  Usage: clawarmor prescan <skill-name>`);
     process.exit(1);
   }
-  console.log(`  [prescan] ${skillArg} — OK (full pre-scan coming in Day 2)`);
-  process.exit(0);
+  const { runPrescan } = await import('./lib/prescan.js');
+  process.exit(await runPrescan(skillArg));
+}
+
+if (cmd === 'log') {
+  const sinceIdx = args.indexOf('--since');
+  const sinceArg = sinceIdx !== -1 ? args[sinceIdx + 1] : null;
+  const logFlags = {
+    json: args.includes('--json'),
+    tokens: args.includes('--tokens'),
+    since: sinceArg || null,
+  };
+  const { runLog } = await import('./lib/log-viewer.js');
+  process.exit(await runLog(logFlags));
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
