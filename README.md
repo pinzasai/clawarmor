@@ -51,9 +51,11 @@ npm install -g clawarmor && clawarmor audit
 
 Every other OpenClaw security tool reads your config file and tells you if things look right on paper.
 
-**ClawArmor also connects to your running gateway and verifies live behavior.**
+**ClawArmor also connects locally to your running gateway and verifies live behavior.**
 
 Config says `bind: loopback`. Is your gateway *actually* unreachable on LAN? Config says auth is enabled. Does the live WebSocket endpoint *actually* reject unauthenticated connections? A misconfigured nginx in front can make your config lie. Live probes can't be faked.
+
+> All probes connect from your machine to `127.0.0.1` (and your local network interfaces). Nothing leaves your machine.
 
 ---
 
