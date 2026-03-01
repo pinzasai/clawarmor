@@ -6,7 +6,7 @@
 
 **`clawarmor scan`** reads source files in installed skill directories. It runs regex patterns against file content to detect suspicious code. It does not execute any skill code. It never sends file contents anywhere.
 
-**`clawarmor monitor`** (paid tier) performs external HTTP/WebSocket probes against your instance from our infrastructure. You configure this by providing your instance URL. We check from outside whether your instance is reachable without authentication.
+**`clawarmor monitor`** is a planned future command. Details TBD.
 
 ## What ClawArmor never does
 

@@ -127,7 +127,7 @@ Requires **Node.js 18+**. Zero runtime npm dependencies (Node.js built-ins only)
 |---|---|---|
 | T-ACCESS-003: Token/config exposure | ✅ | `audit` — file permissions + config checks |
 | T-PERSIST-001: Malicious skill supply chain | ✅ | `scan` — all skill files, not just SKILL.md |
-| T-IMPACT-002: API cost DoS via exposure | ✅ | `audit` live probes detect exposure first |
+| T-IMPACT-002: API cost DoS via exposure | ✅ | `audit` live probes detect local exposure |
 | T-EXEC-001/002: Prompt injection | ❌ | Runtime policy layer — use SupraWall |
 | T-EXFIL-001: Data exfiltration | ❌ | Runtime policy layer — use SupraWall |
 
@@ -137,7 +137,7 @@ Requires **Node.js 18+**. Zero runtime npm dependencies (Node.js built-ins only)
 
 `audit`, `scan`, `fix`, `verify`, and `trend` run entirely locally. One optional network call: `registry.npmjs.org` for version check (can be skipped with `--offline`).
 
-`clawarmor monitor` is a work in progress — coming soon.
+`clawarmor monitor` — not yet implemented.
 
 Every run prints what it reads and what network calls it makes before executing.
 
