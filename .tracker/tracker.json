@@ -3,8 +3,8 @@
   "mission": "Protect every OpenClaw instance in the world. Quality bar: staff security engineer with 20 years experience.",
   "repo": "https://github.com/pinzasai/clawarmor",
   "lastUpdated": "2026-02-28T21:50:00-08:00",
-  "currentVersion": "1.0.0",
-  "nextVersion": "1.1.0",
+  "currentVersion": "1.1.0",
+  "nextVersion": "1.2.0",
   "score": { "current": 100, "machine": "Alberto's Mac mini" },
   "phases": [
     {
