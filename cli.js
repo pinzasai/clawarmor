@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '2.1.0';
+const VERSION = '2.2.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -45,7 +45,8 @@ function usage() {
   console.log(`    ${paint.cyan('trend')}    Show score over last N audits (ASCII chart)`);
   console.log(`    ${paint.cyan('compare')}  Compare coverage vs openclaw security audit`);
   console.log(`    ${paint.cyan('fix')}      Auto-apply safe fixes (--dry-run to preview, --apply to run)`);
-  console.log(`    ${paint.cyan('harden')}   Interactive hardening wizard (--dry-run, --auto)`);
+  console.log(`    ${paint.cyan('harden')}   Interactive hardening wizard (--dry-run, --auto, --monitor)`);
+  console.log(`    ${paint.cyan('rollback')} Restore config from a snapshot (--list, --id <id>)`);
   console.log(`    ${paint.cyan('status')}   One-screen security posture dashboard`);
   console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
   console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
@@ -203,9 +204,22 @@ if (cmd === 'harden') {
     dryRun: args.includes('--dry-run'),
     auto: args.includes('--auto'),
     force: args.includes('--force'),
+    monitor: args.includes('--monitor'),
+    monitorReport: args.includes('--monitor-report'),
+    monitorOff: args.includes('--monitor-off'),
   };
   const { runHarden } = await import('./lib/harden.js');
   process.exit(await runHarden(hardenFlags));
+}
+
+if (cmd === 'rollback') {
+  const idIdx = args.indexOf('--id');
+  const rollbackFlags = {
+    list: args.includes('--list'),
+    id: idIdx !== -1 ? args[idIdx + 1] : null,
+  };
+  const { runRollback } = await import('./lib/rollback.js');
+  process.exit(await runRollback(rollbackFlags));
 }
 
 if (cmd === 'status') {
