@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '2.0.0';
+const VERSION = '2.1.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -156,7 +156,7 @@ if (cmd === 'compare') {
 
 if (cmd === 'fix') {
   const { runFix } = await import('./lib/fix.js');
-  const fixFlags = { apply: process.argv.includes('--apply'), dryRun: process.argv.includes('--dry-run') };
+  const fixFlags = { apply: process.argv.includes('--apply'), dryRun: process.argv.includes('--dry-run'), force: process.argv.includes('--force') };
   process.exit(await runFix(fixFlags));
 }
 
@@ -202,6 +202,7 @@ if (cmd === 'harden') {
   const hardenFlags = {
     dryRun: args.includes('--dry-run'),
     auto: args.includes('--auto'),
+    force: args.includes('--force'),
   };
   const { runHarden } = await import('./lib/harden.js');
   process.exit(await runHarden(hardenFlags));

@@ -1,65 +1,85 @@
-# HackerNews Launch Post — ClawArmor
+# HackerNews Launch Post — ClawArmor v2.0
 
-## Title (pick one)
-- "Show HN: ClawArmor – security auditor for OpenClaw agents with live gateway probes"
-- "Show HN: I built a security tool for OpenClaw that actually connects to your gateway instead of just reading config files"
+## Title options (pick one)
+- "Show HN: ClawArmor v2.0 – security system for OpenClaw agents (not just a linter)"
+- "Show HN: I turned an OpenClaw config auditor into a security system that watches, intercepts, and hardens automatically"
+- "Show HN: ClawArmor – goes from Grade D to A+ in one command for your AI agent"
 
 ---
 
 ## Body
 
-**Show HN: ClawArmor – security auditor for OpenClaw agents (live probes, not just config reads)**
+**Show HN: ClawArmor v2.0 — security system for OpenClaw agents**
 
-Every OpenClaw security tool I found reads your config file and tells you if things look wrong. That's not enough.
+I built ClawArmor v1 a few weeks ago as a config linter for OpenClaw agents. People used it but the problem was obvious: you run it, get a score, nothing happens until you run it again. That's a questionnaire, not security.
 
-Config says `bind: loopback`. Is your gateway *actually* not reachable on LAN? Config says `auth.mode: token`. Does the live WebSocket endpoint *actually* reject unauthenticated connections? I wanted a tool that checks both — and that's ClawArmor.
+v2.0 changes the model. It watches. It intercepts. It hardens automatically.
 
-**What it does:**
+**Three layers, one install command:**
 
-`clawarmor audit` — 32 checks including 5 live behavioral probes:
-- Tries to TCP-connect to your gateway on every non-loopback interface
-- Sends a WebSocket handshake with no auth token and checks if the server rejects it
-- GETs /health and checks if it leaks config data in the response body
-- Sends a CORS OPTIONS request with `Origin: https://evil.example.com`
-- All probes timeout at 2s, fail gracefully if gateway isn't running
+```bash
+npm install -g clawarmor
+clawarmor protect --install
+```
 
-`clawarmor scan` — scans installed skills for malicious code:
-- All .js, .sh, .py, .ts files (not just SKILL.md markdown)
-- Built-in skills capped at INFO severity (reviewed by OpenClaw team); user-installed get full severity
-- SKILL.md natural language instruction scanning (credential read instructions, system prompt overrides, exfiltration instructions)
+That one command installs:
 
-`clawarmor fix` — auto-applies safe fixes:
-- `--dry-run` to preview what would change
-- `--apply` to execute
-- Shows which fixes need a gateway restart
+1. **clawarmor-guard** — an OpenClaw hook that fires on every gateway startup, runs a silent audit, alerts via your agent if the score drops or a critical issue appears
+2. **clawarmor watch** — a lightweight fs.watch daemon (Node built-in, zero deps) on `~/.openclaw/` that re-audits on config changes and alerts on regressions in real time
+3. **clawhub-intercept** — a shell function that wraps `openclaw clawhub install` to scan skills from ClawHub *before* they're activated. Blocks CRITICAL findings.
 
-`clawarmor verify` — re-runs only previously-failed checks. Exit 0 if all fixed (CI-friendly).
+**New commands in v2.0:**
 
-`clawarmor trend` — ASCII chart of score history.
+`clawarmor prescan <skill>` — downloads and scans a skill before you install it. Resolves local OpenClaw built-ins first, falls back to npm registry.
 
-**The background:**
+`clawarmor harden` — auto-fix engine. Three modes:
+- `--dry-run`: shows what would change, no writes
+- interactive (default): confirms each fix before applying
+- `--auto`: applies all safe fixes for CI/scripts
 
-Researchers found ~42,000 exposed OpenClaw instances in Jan–Feb 2026 (Bitsight, Maor Dayan). Most were exposed due to the default `0.0.0.0` bind behavior combined with reverse proxy misconfiguration. The existing `openclaw security audit` command reads config but doesn't probe live behavior. Someone with a misconfigured nginx in front could have `bind: loopback` in their config while the gateway is actually reachable via proxy headers.
+`clawarmor status` — one-screen dashboard: posture grade, watcher state, intercept state, audit log count, credential age, next digest date.
+
+`clawarmor digest` — weekly security summary delivered via your agent's own channels. No network calls. Local data only.
+
+`clawarmor log` — JSONL audit trail of every run, every finding, every trigger.
+
+**The threat model:**
+
+Based on the MITRE ATLAS framework applied to OpenClaw. v1 covered 4 of 18 documented attack vectors. v2.0 covers 14. The three I care most about:
+
+- **T-PERSIST-001** (malicious skill install) — Critical/P0. ClawHub moderation only checks slug/displayName/summary metadata with regex. It does NOT analyze skill code. clawhub-intercept + prescan fills this gap.
+- **T-ACCESS-003** (token theft) — credential file permissions, age tracking (>90d WARN, >180d HIGH), git history scan for committed secrets
+- **T-PERSIST-003** (config tampering) — config integrity hashing from v1 + real-time watch daemon in v2
+
+**Running it on my own machine right now:**
+
+```
+Security Score: 50/100  Grade: D
+```
+
+Three real findings: world-readable credential files, API key patterns in ~/.openclaw/ JSON files, exec approval not configured. Zero false positives — tested against 52 built-in OpenClaw skills.
 
 **Tech:**
 
-- Node.js built-ins only (net, http, os, fs, crypto) — zero runtime npm dependencies
-- ESM, works on Node 18+
-- The SKILL.md scanner exists because existing ClawHub security skills only scan the markdown file, not the .js scripts that skills actually run
+- Node.js built-ins only — `fs`, `net`, `http`, `crypto`, `child_process`. Zero runtime npm dependencies.
+- ESM, Node 18+
+- All analysis is local. No telemetry. No phone home. The only external call is `prescan` downloading the skill you were about to install anyway.
 
-```
+```bash
 npm install -g clawarmor
-clawarmor audit
+clawarmor audit              # see your score + grade
+clawarmor harden             # fix what's fixable
+clawarmor protect --install  # activate always-on protection
 ```
 
 Source: https://github.com/pinzasai/clawarmor
 
-Happy to answer questions about the probe implementation or the threat model.
+Happy to answer questions about the threat model or the intercept architecture.
 
 ---
 
-## Tags
-security, nodejs, openclaw, ai-agents, open-source
-
-## Best time to post
-Tuesday–Thursday 9am–11am Eastern (peak HN traffic)
+## Notes for Alberto before posting
+- "50/100 Grade D on my own machine" is honest and good — shows it actually finds things
+- Title 1 or 2 recommended over 3 (3 reads as marketing)
+- Timing: Sunday afternoon HN is low traffic — Monday morning PST gets more eyes
+- After posting: reply to every comment in first 2 hours (velocity matters for front page)
