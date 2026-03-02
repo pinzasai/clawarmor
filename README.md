@@ -40,6 +40,11 @@ clawarmor audit
 | `trend` | ASCII chart of your security score over time |
 | `compare` | Compare coverage vs openclaw security audit |
 | `fix` | Auto-apply safe fixes (--dry-run to preview, --apply to run) |
+| `snapshot` | Save a config snapshot manually (auto-saved before every harden/fix) |
+| `rollback` | Restore config from auto-snapshot (--list, --id <id>) |
+| `harden --monitor` | Enable monitor mode — observe before enforcing |
+| `harden --monitor-report` | Show what monitor mode has observed |
+| `harden --monitor-off` | Disable monitor mode |
 
 ## What it catches
 
@@ -55,6 +60,26 @@ clawarmor audit
 | CORS misconfiguration | OPTIONS probe with arbitrary origin | Full |
 | Gateway exposure | TCP-connects to every non-loopback interface | Full |
 | Runtime policy enforcement | Requires a runtime layer (SupraWall) | None |
+
+## Safety features
+
+**Impact classification** — Every fix is tagged 🟢 Safe, 🟡 Caution, or 🔴 Breaking. `--auto` mode skips breaking changes unless you pass `--force`.
+
+**Config snapshots** — ClawArmor auto-saves your config before every `harden` or `fix` run. If something breaks, roll back instantly:
+
+```bash
+clawarmor rollback --list    # see all snapshots
+clawarmor rollback           # restore the latest
+clawarmor rollback --id <n>  # restore a specific one
+```
+
+**Monitor mode** — Observe what `harden` would do before enforcing:
+
+```bash
+clawarmor harden --monitor        # start monitoring
+clawarmor harden --monitor-report # see what it observed
+clawarmor harden --monitor-off    # stop monitoring
+```
 
 ## Philosophy
 
