@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '2.2.0';
+const VERSION = '3.0.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -51,6 +51,7 @@ function usage() {
   console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
   console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
   console.log(`    ${paint.cyan('prescan')}  Pre-scan a skill before installing it`);
+  console.log(`    ${paint.cyan('stack')}    Security orchestrator — deploy Invariant + IronCurtain from audit data`);
   console.log(`    ${paint.cyan('log')}      View the audit event log`);
   console.log(`    ${paint.cyan('digest')}   Show weekly security digest`);
   console.log('');
@@ -230,6 +231,12 @@ if (cmd === 'status') {
 if (cmd === 'digest') {
   const { runDigest } = await import('./lib/digest.js');
   process.exit(await runDigest());
+}
+
+if (cmd === 'stack') {
+  const { runStack } = await import('./lib/stack.js');
+  const stackArgs = args.slice(1);
+  process.exit(await runStack(stackArgs));
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
