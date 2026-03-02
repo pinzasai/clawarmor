@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '3.0.0';
+const VERSION = '3.1.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -51,9 +51,11 @@ function usage() {
   console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
   console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
   console.log(`    ${paint.cyan('prescan')}  Pre-scan a skill before installing it`);
-  console.log(`    ${paint.cyan('stack')}    Security orchestrator — deploy Invariant + IronCurtain from audit data`);
-  console.log(`    ${paint.cyan('log')}      View the audit event log`);
-  console.log(`    ${paint.cyan('digest')}   Show weekly security digest`);
+  console.log(`    ${paint.cyan('stack')}         Security orchestrator — deploy Invariant + IronCurtain from audit data`);
+  console.log(`    ${paint.cyan('skill-report')}  Show post-install audit impact of last skill install`);
+  console.log(`    ${paint.cyan('profile')}       Manage contextual hardening profiles`);
+  console.log(`    ${paint.cyan('log')}            View the audit event log`);
+  console.log(`    ${paint.cyan('digest')}         Show weekly security digest`);
   console.log('');
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--url <host:port>')}   Probe a specific host:port instead of 127.0.0.1`);
@@ -83,6 +85,9 @@ const parsedUrl = parseUrlFlag(urlArg);
 const configIdx = args.indexOf('--config');
 const configPathArg = configIdx !== -1 ? args[configIdx + 1] : null;
 
+const profileIdx = args.indexOf('--profile');
+const profileArg = profileIdx !== -1 ? args[profileIdx + 1] : null;
+
 const flags = {
   json: args.includes('--json'),
   explainReads: args.includes('--explain-reads'),
@@ -90,6 +95,7 @@ const flags = {
   targetPort: parsedUrl?.port || null,
   configPath: configPathArg || null,
   acceptChanges: args.includes('--accept-changes'),
+  profile: profileArg || null,
 };
 
 if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') { usage(); process.exit(0); }
@@ -201,6 +207,7 @@ if (cmd === 'log') {
 }
 
 if (cmd === 'harden') {
+  const hardenProfileIdx = args.indexOf('--profile');
   const hardenFlags = {
     dryRun: args.includes('--dry-run'),
     auto: args.includes('--auto'),
@@ -208,6 +215,7 @@ if (cmd === 'harden') {
     monitor: args.includes('--monitor'),
     monitorReport: args.includes('--monitor-report'),
     monitorOff: args.includes('--monitor-off'),
+    profile: hardenProfileIdx !== -1 ? args[hardenProfileIdx + 1] : null,
   };
   const { runHarden } = await import('./lib/harden.js');
   process.exit(await runHarden(hardenFlags));
@@ -237,6 +245,18 @@ if (cmd === 'stack') {
   const { runStack } = await import('./lib/stack.js');
   const stackArgs = args.slice(1);
   process.exit(await runStack(stackArgs));
+}
+
+if (cmd === 'skill-report') {
+  const { runSkillReport } = await import('./lib/skill-report.js');
+  const srFlags = { apply: args.includes('--apply') };
+  process.exit(await runSkillReport(srFlags));
+}
+
+if (cmd === 'profile') {
+  const { runProfileCmd } = await import('./lib/profile-cmd.js');
+  const profileArgs = args.slice(1);
+  process.exit(await runProfileCmd(profileArgs));
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
