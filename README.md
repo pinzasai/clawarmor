@@ -51,7 +51,9 @@ ClawArmor sits at the foundation and orchestrates the layers above it:
 |---|---|
 | `audit` | Score your OpenClaw config (0–100), live gateway probes, plain-English verdict |
 | `scan` | Scan all installed skill files for malicious code and SKILL.md instructions |
+| `scan --json` | Machine-readable scan output — pipe to CI, scripts, or dashboards |
 | `prescan <skill>` | Pre-scan a skill before installing — blocks on CRITICAL findings |
+| `skill verify <name>` | Deep-verify a specific installed skill — checks SKILL.md + all referenced scripts |
 | `fix` | Auto-apply safe fixes (--dry-run to preview, --apply to run) |
 | `harden` | Interactive hardening wizard (--dry-run, --auto, --monitor) |
 | `status` | One-screen security posture dashboard |
@@ -76,6 +78,9 @@ ClawArmor sits at the foundation and orchestrates the layers above it:
 | `log` | View the audit event log |
 | `digest` | Show weekly security digest |
 | `watch` | Monitor config and skill changes in real time |
+| `baseline save` | Save current scan results as baseline |
+| `baseline diff` | Compare current scan against saved baseline — see what changed |
+| `incident create` | Log a security incident with timestamp, findings, and remediation notes |
 | `protect --install` | Install guard hook, shell intercept (zsh/bash/fish), and watch daemon |
 | `snapshot` | Save a config snapshot manually (auto-saved before every harden/fix) |
 | `rollback` | Restore config from auto-snapshot (--list, --id <id>) |
