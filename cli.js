@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '3.1.0';
+const VERSION = '3.2.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -51,7 +51,10 @@ function usage() {
   console.log(`    ${paint.cyan('watch')}    Monitor config and skill changes in real time`);
   console.log(`    ${paint.cyan('protect')}  Install/uninstall/status the full guard system`);
   console.log(`    ${paint.cyan('prescan')}  Pre-scan a skill before installing it`);
+  console.log(`    ${paint.cyan('baseline')}      Save, list, and diff security baselines (save|list|diff)`);
+  console.log(`    ${paint.cyan('incident')}      Log and manage security incidents (create|list)`);
   console.log(`    ${paint.cyan('stack')}         Security orchestrator — deploy Invariant + IronCurtain from audit data`);
+  console.log(`    ${paint.cyan('skill')}         Skill utilities — verify a skill directory (skill verify <dir>)`);
   console.log(`    ${paint.cyan('skill-report')}  Show post-install audit impact of last skill install`);
   console.log(`    ${paint.cyan('profile')}       Manage contextual hardening profiles`);
   console.log(`    ${paint.cyan('log')}            View the audit event log`);
@@ -60,7 +63,7 @@ function usage() {
   console.log(`  ${paint.dim('Flags:')}`);
   console.log(`    ${paint.dim('--url <host:port>')}   Probe a specific host:port instead of 127.0.0.1`);
   console.log(`    ${paint.dim('--config <path>')}     Use a specific config file instead of ~/.openclaw/openclaw.json`);
-  console.log(`    ${paint.dim('--json')}              Machine-readable JSON output (audit only)`);
+  console.log(`    ${paint.dim('--json')}              Machine-readable JSON output (audit, scan)`);
   console.log(`    ${paint.dim('--explain-reads')}     Print every file read and network call before executing
     ${paint.dim('--accept-changes')}    Update config baseline after reviewing detected changes`);
   console.log('');
@@ -141,7 +144,7 @@ if (cmd === 'audit') {
 
 if (cmd === 'scan') {
   const { runScan } = await import('./lib/scan.js');
-  process.exit(await runScan());
+  process.exit(await runScan({ json: flags.json }));
 }
 
 if (cmd === 'verify') {
@@ -257,6 +260,29 @@ if (cmd === 'profile') {
   const { runProfileCmd } = await import('./lib/profile-cmd.js');
   const profileArgs = args.slice(1);
   process.exit(await runProfileCmd(profileArgs));
+}
+
+if (cmd === 'baseline') {
+  const { runBaseline } = await import('./lib/baseline-cmd.js');
+  const baselineArgs = args.slice(1);
+  process.exit(await runBaseline(baselineArgs));
+}
+
+if (cmd === 'incident') {
+  const { runIncident } = await import('./lib/incident-cmd.js');
+  const incidentArgs = args.slice(1);
+  process.exit(await runIncident(incidentArgs));
+}
+
+if (cmd === 'skill') {
+  const sub = args[1];
+  if (sub === 'verify') {
+    const skillDir = args[2];
+    const { runSkillVerify } = await import('./lib/skill-verify.js');
+    process.exit(await runSkillVerify(skillDir));
+  }
+  console.log(`  ${paint.dim('Usage:')} clawarmor skill verify <skill-dir>`);
+  process.exit(1);
 }
 
 console.log(`  ${paint.red('✗')} Unknown command: ${paint.bold(cmd)}`);
