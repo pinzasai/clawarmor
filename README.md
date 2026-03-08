@@ -69,6 +69,31 @@ ClawArmor sits at the foundation and orchestrates the layers above it:
 | `stack sync` | Regenerate stack configs from latest audit — run after harden/fix |
 | `stack teardown` | Remove deployed stack components |
 
+### Invariant Deep Integration (v3.3.0)
+
+| Command | Description |
+|---|---|
+| `invariant sync` | Generate severity-tiered Invariant policies from latest audit findings |
+| `invariant sync --dry-run` | Preview policies without writing |
+| `invariant sync --push` | Generate + validate + push to running Invariant instance |
+| `invariant sync --json` | Machine-readable output for scripting |
+| `invariant status` | Show current policy file and last sync report |
+
+**Severity tiers:**
+- `CRITICAL`/`HIGH` findings → `raise "..."` (hard enforcement — blocks trace)
+- `MEDIUM` findings → `warn "..."` (monitoring/alerting — logged)
+- `LOW`/`INFO` findings → `# comment` (informational only)
+
+Policies are written to `~/.clawarmor/invariant-policies/clawarmor.inv`. With `--push`, ClawArmor validates the policy syntax via `invariant-ai` and live-reloads a running Invariant instance. If no instance is running, the policy is written to disk and enforces on next start.
+
+```bash
+pip3 install invariant-ai           # required for --push validation
+clawarmor audit                     # run audit to capture findings
+clawarmor invariant sync            # generate tiered policies
+clawarmor invariant sync --push     # push to running Invariant instance
+clawarmor invariant status          # check what's deployed
+```
+
 ### History & Monitoring
 
 | Command | Description |

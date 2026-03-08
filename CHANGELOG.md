@@ -1,5 +1,56 @@
 # Changelog
 
+## [3.3.0] — 2026-03-07
+
+### New Features
+
+#### `clawarmor invariant sync` — Invariant Deep Integration
+The Invariant integration in v3.0 detected presence of `invariant-ai`. v3.3.0 does the real work:
+it reads your latest audit findings and generates severity-tiered Invariant DSL policies that
+actually enforce behavioral guardrails at runtime.
+
+**Severity tiers:**
+- `CRITICAL`/`HIGH` findings → `raise "..."` hard enforcement rules (blocks the trace)
+- `MEDIUM` findings → `warn "..."` monitoring/alerting rules (logs but allows)
+- `LOW`/`INFO` findings → `# informational` comments (guidance only)
+
+**Policy mappings (finding → Invariant rule):**
+| Finding type | Generated policy |
+|---|---|
+| `exec.ask=off` / unrestricted exec | `raise` on any `exec` tool call |
+| Credential files world-readable | `raise` on `read_file` to sensitive paths (`.ssh`, `.aws`, `agent-accounts`, `.openclaw`) |
+| Open channel policy (no `allowFrom`) | `raise`/`warn` on `read_file → send_message` without channel restriction |
+| Elevated tool calls unrestricted | `raise`/`warn` on elevated calls with no `allowFrom_restricted` metadata |
+| Skill supply chain / unpinned | `raise`/`warn` on tool calls lacking `skill_verified` or `skill_pinned` metadata |
+| API key/secret in config files | `raise`/`warn` on `read_file` output containing secret patterns → `send_message` |
+| Baseline: prompt injection | `raise` on web content → outbound message (always included) |
+
+**New commands:**
+```
+clawarmor invariant sync                  # generate tiered policies from latest audit
+clawarmor invariant sync --dry-run        # preview without writing
+clawarmor invariant sync --push           # generate + validate + push to Invariant instance
+clawarmor invariant sync --push --host <host> --port <port>
+clawarmor invariant sync --json           # machine-readable output
+clawarmor invariant status                # show current policy file + last sync report
+```
+
+**Policy output:**
+- Policy file: `~/.clawarmor/invariant-policies/clawarmor.inv`
+- Sync report: `~/.clawarmor/invariant-policies/sync-report.json`
+
+**`--push` behavior:**
+1. Validates policy syntax via `LocalPolicy.from_file()` (requires `pip3 install invariant-ai`)
+2. If Invariant instance running on `localhost:8000` → live-reloads policy immediately
+3. If not running → policy written to disk, enforces on next Invariant start
+
+**Relationship to `clawarmor stack`:**
+- `stack deploy/sync` generates basic `.inv` rules in `~/.clawarmor/invariant-rules.inv`
+- `invariant sync` generates richer severity-tiered policies in `~/.clawarmor/invariant-policies/clawarmor.inv`
+- They are complementary; `invariant sync` is the recommended path for serious deployments
+
+---
+
 ## [3.2.0] — 2026-03-03
 
 ### New Features

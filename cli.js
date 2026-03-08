@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '3.2.0';
+const VERSION = '3.3.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -54,6 +54,7 @@ function usage() {
   console.log(`    ${paint.cyan('baseline')}      Save, list, and diff security baselines (save|list|diff)`);
   console.log(`    ${paint.cyan('incident')}      Log and manage security incidents (create|list)`);
   console.log(`    ${paint.cyan('stack')}         Security orchestrator — deploy Invariant + IronCurtain from audit data`);
+  console.log(`    ${paint.cyan('invariant')}      Invariant deep integration — sync findings → runtime policies (v3.3.0)`);
   console.log(`    ${paint.cyan('skill')}         Skill utilities — verify a skill directory (skill verify <dir>)`);
   console.log(`    ${paint.cyan('skill-report')}  Show post-install audit impact of last skill install`);
   console.log(`    ${paint.cyan('profile')}       Manage contextual hardening profiles`);
@@ -282,6 +283,32 @@ if (cmd === 'skill') {
     process.exit(await runSkillVerify(skillDir));
   }
   console.log(`  ${paint.dim('Usage:')} clawarmor skill verify <skill-dir>`);
+  process.exit(1);
+}
+
+
+if (cmd === 'invariant') {
+  const sub = args[1];
+  const invArgs = args.slice(2);
+
+  if (!sub || sub === 'status') {
+    const { runInvariantStatus } = await import('./lib/invariant-sync.js');
+    process.exit(await runInvariantStatus());
+  }
+
+  if (sub === 'sync') {
+    const { runInvariantSync } = await import('./lib/invariant-sync.js');
+    process.exit(await runInvariantSync(invArgs));
+  }
+
+  console.log('');
+  console.log(`  Invariant subcommands:`);
+  console.log(`    clawarmor invariant status              # show policy + last sync`);
+  console.log(`    clawarmor invariant sync                # generate policies from latest audit`);
+  console.log(`    clawarmor invariant sync --dry-run      # preview without writing`);
+  console.log(`    clawarmor invariant sync --push         # generate + push to Invariant instance`);
+  console.log(`    clawarmor invariant sync --push --host <host> --port <port>`);
+  console.log('');
   process.exit(1);
 }
 
