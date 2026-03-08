@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '3.4.0';
+const VERSION = '3.5.1';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -144,8 +144,13 @@ if (cmd === 'audit') {
 }
 
 if (cmd === 'scan') {
+  const scanReportIdx = args.indexOf('--report');
+  const scanFlags = {
+    json: flags.json,
+    report: scanReportIdx !== -1,
+  };
   const { runScan } = await import('./lib/scan.js');
-  process.exit(await runScan({ json: flags.json }));
+  process.exit(await runScan(scanFlags));
 }
 
 if (cmd === 'verify') {

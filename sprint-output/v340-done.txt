@@ -1,0 +1,28 @@
+## What Was Shipped
+
+`clawarmor harden --report` — structured hardening report command
+
+### Changes:
+- `lib/harden.js`: Added full report support — JSON + Markdown writers, per-check tracking,
+  system info capture, report summary printer. Existing behavior unchanged when --report not passed.
+- `cli.js`: Added --report, --report-format flag parsing for harden command
+- `package.json`: Version bumped 3.3.0 → 3.4.0
+- `README.md`: Added "Hardening reports (v3.4.0)" section with all usage examples
+- `CHANGELOG.md`: Added [3.4.0] entry
+
+### Commands now supported:
+  clawarmor harden --report
+  clawarmor harden --report /path/to/report.json
+  clawarmor harden --report /path/to/report.md --report-format text
+  clawarmor harden --auto --report
+
+## npm Publish Status
+
+✅ SUCCESS — clawarmor@3.4.0 published to npm (tag: latest)
+
+## Issues Encountered
+
+None. All three test cases passed:
+1. `clawarmor harden --report` → wrote valid JSON to default path
+2. `clawarmor harden --report /tmp/test-report.md --report-format text` → wrote clean Markdown
+3. `clawarmor harden --auto --report /tmp/test-report.json` → wrote valid JSON

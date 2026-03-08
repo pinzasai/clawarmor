@@ -52,6 +52,7 @@ ClawArmor sits at the foundation and orchestrates the layers above it:
 | `audit` | Score your OpenClaw config (0–100), live gateway probes, plain-English verdict |
 | `scan` | Scan all installed skill files for malicious code and SKILL.md instructions |
 | `scan --json` | Machine-readable scan output — pipe to CI, scripts, or dashboards |
+| `scan --report` | Write structured JSON + Markdown reports after scanning (v3.5.1) |
 | `prescan <skill>` | Pre-scan a skill before installing — blocks on CRITICAL findings |
 | `skill verify <name>` | Deep-verify a specific installed skill — checks SKILL.md + all referenced scripts |
 | `fix` | Auto-apply safe fixes (--dry-run to preview, --apply to run) |
@@ -163,6 +164,34 @@ clawarmor harden --auto --report
 ```
 
 Report structure includes: version, timestamp, OS/OpenClaw info, summary counts (hardened/skipped/already-good), and per-check action details with before/after values.
+
+**Scan reports** (v3.5.1) — Export a structured report after scanning skills:
+
+```bash
+# Write JSON + Markdown reports (e.g. ~/.openclaw/clawarmor-scan-report-2025-03-08.json + .md)
+clawarmor scan --report
+```
+
+Two files are always written together:
+- `clawarmor-scan-report-YYYY-MM-DD.json` — machine-readable, includes per-skill status, severity, findings, and overall score
+- `clawarmor-scan-report-YYYY-MM-DD.md` — human-readable with executive summary table, findings detail, and remediation steps
+
+Example JSON structure:
+```json
+{
+  "version": "3.5.1",
+  "timestamp": "2025-03-08T12:00:00.000Z",
+  "system": { "hostname": "myhost", "platform": "darwin", "node_version": "v20.0.0", "openclaw_version": "1.2.0" },
+  "verdict": "PASS",
+  "score": 100,
+  "summary": { "total": 12, "passed": 12, "failed": 0, "warnings": 0, "critical_findings": 0, "high_findings": 0 },
+  "checks": [
+    { "name": "weather", "status": "pass", "severity": "NONE", "detail": "No findings", "type": "user" }
+  ]
+}
+```
+
+Terminal output is still shown when `--report` is used — the flag only adds file output on top.
 
 ## Philosophy
 
