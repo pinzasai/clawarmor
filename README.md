@@ -55,7 +55,7 @@ ClawArmor sits at the foundation and orchestrates the layers above it:
 | `prescan <skill>` | Pre-scan a skill before installing — blocks on CRITICAL findings |
 | `skill verify <name>` | Deep-verify a specific installed skill — checks SKILL.md + all referenced scripts |
 | `fix` | Auto-apply safe fixes (--dry-run to preview, --apply to run) |
-| `harden` | Interactive hardening wizard (--dry-run, --auto, --monitor) |
+| `harden` | Interactive hardening wizard (--dry-run, --auto, --monitor, --report) |
 | `status` | One-screen security posture dashboard |
 | `verify` | Re-run only previously-failed checks (CI-friendly, exit 0 = all fixed) |
 
@@ -145,6 +145,24 @@ clawarmor harden --monitor        # start monitoring
 clawarmor harden --monitor-report # see what it observed
 clawarmor harden --monitor-off    # stop monitoring
 ```
+
+**Hardening reports** (v3.4.0) — Export a structured report after hardening:
+
+```bash
+# Write JSON report to default location (~/.openclaw/clawarmor-harden-report-YYYY-MM-DD.json)
+clawarmor harden --report
+
+# Write JSON report to a custom path
+clawarmor harden --report /path/to/report.json
+
+# Write Markdown report (human-readable, shareable)
+clawarmor harden --report /path/to/report.md --report-format text
+
+# Combine with auto mode
+clawarmor harden --auto --report
+```
+
+Report structure includes: version, timestamp, OS/OpenClaw info, summary counts (hardened/skipped/already-good), and per-check action details with before/after values.
 
 ## Philosophy
 

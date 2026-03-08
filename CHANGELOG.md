@@ -1,5 +1,43 @@
 # Changelog
 
+## [3.4.0] — 2026-03-08
+
+### New Features
+
+#### `clawarmor harden --report` — Structured Hardening Reports
+Export a portable, structured summary of every hardening run — what was hardened, what was
+skipped, why, and what was already good. The #1 feature gap for enterprise adoption.
+
+**Flags:**
+- `--report [path]` — Write JSON report (default: `~/.openclaw/clawarmor-harden-report-YYYY-MM-DD.json`)
+- `--report-format text` — Write Markdown report instead of JSON
+
+**JSON report structure:**
+```json
+{
+  "version": "3.4.0",
+  "timestamp": "...",
+  "system": { "os": "...", "openclaw_version": "..." },
+  "summary": { "total_checks": N, "hardened": N, "already_good": N, "skipped": N },
+  "items": [
+    { "check": "exec.ask.off", "status": "hardened", "before": "off", "after": "on-miss", "action": "..." },
+    { "check": "gateway.host.open", "status": "skipped", "skipped_reason": "Breaking fix..." }
+  ]
+}
+```
+
+**Examples:**
+```bash
+clawarmor harden --report
+clawarmor harden --report /tmp/my-report.json
+clawarmor harden --report /tmp/report.md --report-format text
+clawarmor harden --auto --report
+```
+
+Existing `clawarmor harden` behavior unchanged when `--report` is not passed.
+
+---
+
 ## [3.3.0] — 2026-03-07
 
 ### New Features

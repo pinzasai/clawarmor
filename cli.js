@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '3.3.0';
+const VERSION = '3.4.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -212,6 +212,12 @@ if (cmd === 'log') {
 
 if (cmd === 'harden') {
   const hardenProfileIdx = args.indexOf('--profile');
+  const reportIdx = args.indexOf('--report');
+  const reportFormatIdx = args.indexOf('--report-format');
+  // --report can be a flag alone or --report <path>
+  const reportNext = reportIdx !== -1 ? args[reportIdx + 1] : null;
+  const reportPath = (reportNext && !reportNext.startsWith('--')) ? reportNext : null;
+  const reportFormat = reportFormatIdx !== -1 ? (args[reportFormatIdx + 1] || 'json') : 'json';
   const hardenFlags = {
     dryRun: args.includes('--dry-run'),
     auto: args.includes('--auto'),
@@ -220,6 +226,9 @@ if (cmd === 'harden') {
     monitorReport: args.includes('--monitor-report'),
     monitorOff: args.includes('--monitor-off'),
     profile: hardenProfileIdx !== -1 ? args[hardenProfileIdx + 1] : null,
+    report: reportIdx !== -1,
+    reportPath: reportPath,
+    reportFormat: reportFormat,
   };
   const { runHarden } = await import('./lib/harden.js');
   process.exit(await runHarden(hardenFlags));

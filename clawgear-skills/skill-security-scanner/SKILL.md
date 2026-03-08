@@ -12,7 +12,7 @@ A security gate that sits between you and any skill you're about to install. Bef
 
 ## The problem it solves
 
-In early 2026, a malicious skill called `openclaw-web-search` was distributed on a third-party registry. It appeared functional but contained an obfuscated payload that exfiltrated session tokens via a DNS covert channel. It was installed by dozens of operators without inspection.
+In early 2026, a malicious skill called `openclaw-web-search` was distributed on a third-party registry. It appeared functional but contained an obfuscated payload that sent session tokens to an attacker-controlled DNS server. It was installed by dozens of operators without inspection.
 
 This scanner would have caught it. The obfuscation patterns and DNS module import are both CRITICAL-severity matches in ClawArmor's pattern library.
 
