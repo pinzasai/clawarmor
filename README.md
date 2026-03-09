@@ -101,6 +101,7 @@ clawarmor invariant status          # check what's deployed
 |---|---|
 | `trend` | ASCII chart of your security score over time |
 | `compare` | Compare coverage vs openclaw security audit |
+| `report --compare` | Diff two report JSON files — show security drift over time (v3.6.0) |
 | `log` | View the audit event log |
 | `digest` | Show weekly security digest |
 | `watch` | Monitor config and skill changes in real time |
@@ -192,6 +193,34 @@ Example JSON structure:
 ```
 
 Terminal output is still shown when `--report` is used — the flag only adds file output on top.
+
+**Report comparison / security drift** (v3.6.0) — Diff two ClawArmor report files to see what changed:
+
+```bash
+# Compare two scan reports and show what got worse (regressions), what improved, and new/resolved issues
+clawarmor report --compare ~/.openclaw/clawarmor-scan-report-2026-03-01.json \
+                            ~/.openclaw/clawarmor-scan-report-2026-03-08.json
+```
+
+Output sections:
+- **Regressions** (red) — checks that were PASS and are now FAIL or WARN
+- **Improvements** (green) — checks that were FAIL/WARN and are now PASS
+- **New Issues** — check IDs in the current report but not in the baseline
+- **Resolved** — check IDs in baseline but no longer present (and they were failing)
+- **Unchanged** — count only, not listed
+
+Score delta is shown when available: `Score: 72 → 85 (+13)`
+
+Works with both scan reports and harden reports. Shows a warning when comparing different report types.
+
+**CI-safe exit codes:**
+- Exit `0` — no regressions (safe to merge/deploy)
+- Exit `1` — one or more regressions detected
+
+Example CI usage:
+```bash
+clawarmor report --compare baseline.json current.json || exit 1
+```
 
 ## Philosophy
 

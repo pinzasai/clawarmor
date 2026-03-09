@@ -3,7 +3,7 @@
 
 import { paint } from './lib/output/colors.js';
 
-const VERSION = '3.5.1';
+const VERSION = '3.6.0';
 const GATEWAY_PORT_DEFAULT = 18789;
 
 function isLocalhost(host) {
@@ -168,6 +168,29 @@ if (cmd === 'trend') {
 if (cmd === 'compare') {
   const { runCompare } = await import('./lib/compare.js');
   process.exit(await runCompare());
+}
+
+if (cmd === 'report') {
+  const compareIdx = args.indexOf('--compare');
+  if (compareIdx !== -1) {
+    const file1 = args[compareIdx + 1];
+    const file2 = args[compareIdx + 2];
+    const { runReportCompare } = await import('./lib/report-compare.js');
+    process.exit(await runReportCompare(file1, file2));
+  }
+  // Default: show usage for report subcommand
+  console.log('');
+  console.log(`  ${paint.bold('report')} — report management`);
+  console.log('');
+  console.log(`  ${paint.cyan('Usage:')}`);
+  console.log(`    clawarmor report --compare <baseline.json> <current.json>`);
+  console.log('');
+  console.log(`  ${paint.dim('Flags:')}`);
+  console.log(`    ${paint.dim('--compare <file1> <file2>')}   Diff two report JSON files, show security drift`);
+  console.log('');
+  console.log(`  ${paint.dim('Exit codes:')}  0 = no regressions, 1 = regressions found (CI-safe)`);
+  console.log('');
+  process.exit(0);
 }
 
 

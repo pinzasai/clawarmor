@@ -1,5 +1,32 @@
 # Changelog
 
+## [3.6.0] — 2026-03-08
+
+### New Features
+
+#### `clawarmor report --compare` — Security Drift Detection
+Diff two ClawArmor report JSON files (scan or harden) to track security posture changes over time.
+
+**Usage:**
+```bash
+clawarmor report --compare baseline.json current.json
+```
+
+**Output sections:**
+- **Regressions** (red) — was PASS, now FAIL/WARN — the important ones
+- **Improvements** (green) — was FAIL/WARN, now PASS
+- **New Issues** — check ID in current but not in baseline
+- **Resolved** — check ID in baseline but no longer present
+- **Unchanged** — count only
+
+Score delta shown when available: `Score: 72 → 85 (+13)`
+
+**CI-safe exit codes:** `0` = no regressions, `1` = regressions found.
+
+Handles mismatched report types (harden vs scan) with a warning but continues.
+
+---
+
 ## [3.4.0] — 2026-03-08
 
 ### New Features
